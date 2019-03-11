@@ -18,14 +18,20 @@ namespace Maze
     class Program
     {
         static Random random = new Random();
+        //█
+        static readonly string wall = "█";
+        static readonly string path = " ";
+        static readonly string solution = "x";
 
-        static readonly string WALL = "██";
-        static readonly string PATH = "  ";
+        static int width = 5;//78;
+        static int height = 5;//19;
 
-        static int width = 25;
-        static int height = 15;
+        static int[] start = { 0, 0 };
+        static int[] finish = { width-1, height-1 };
 
         static Cell[,] cells = new Cell[width,height];
+
+        static bool[,] maze = new bool[width*2+1, height*2+1];
 
         static void InitiateGrid()
         {
@@ -36,45 +42,74 @@ namespace Maze
                     cells[x, y] = new Cell();
                 }
             }
-            PrintGrid();
+            CursorVisible = false;
+            //PrintGrid();
         }
 
         static void PrintGrid()
         {
-            int cursor_x = 2;
+            int w = wall.Length;
+            int cursor_x = w;
             int cursor_y = 1;
             for (int y = 0; y < height; y++)
             {
                 SetCursorPosition(cursor_x, cursor_y);
                 for (int x = 0; x < width; x++)
                 {
-                    SetCursorPosition(cursor_x - 2, cursor_y - 1);
-                    Write(WALL);
+                    SetCursorPosition(cursor_x - w, cursor_y - 1);
+                    Write(wall);
                     SetCursorPosition(cursor_x, cursor_y - 1);
                     if (cells[x, y].walls[0])
-                        Write(WALL);
+                        Write(wall);
                     else
-                        Write(PATH);
-                    SetCursorPosition(cursor_x - 2, cursor_y);
+                        Write(path);
+                    SetCursorPosition(cursor_x - w, cursor_y);
                     if (cells[x, y].walls[3])
-                        Write(WALL);
+                        Write(wall);
                     else
-                        Write(PATH);
-                    cursor_x += 4;
+                        Write(path);
+                    Write(path);
+                    cursor_x += 2*w;
                 }
-                SetCursorPosition(cursor_x - 2, cursor_y-1);
-                Write(WALL);
-                SetCursorPosition(cursor_x-2, cursor_y);
-                Write(WALL);
+                SetCursorPosition(cursor_x - w, cursor_y-1);
+                Write(wall);
+                SetCursorPosition(cursor_x-w, cursor_y);
+                Write(wall);
                 cursor_y+=2;
-                cursor_x = 2;
+                cursor_x = w;
             }
+            SetCursorPosition(start[0] * wall.Length*2+wall.Length, start[1]*2+1);
+            Write("S");
+            SetCursorPosition(finish[0] * wall.Length*2+wall.Length, finish[1]*2+1);
+            Write("F");
             SetCursorPosition(0, cursor_y-1);
             for (int i = 0; i < width*2+1; i++)
             {
-                Write(WALL);
+                Write(wall);
             }
             WriteLine();
+        }
+
+        static void ConvertCellsToMaze()
+        {
+            for (int x = 0; x < width*2; x++)
+            {
+                for (int y = 1; y < height*2; y+=2)
+                {
+                    maze[y-1, x] = cells[(y-1)/2, x / 2].walls[0];
+                    maze[y,x] = cells[y / 2 , x / 2].walls[1];
+                }
+            }
+            WriteLine();
+            for (int i = 0; i < height*2+1; i++)
+            {
+                for (int j = 0; j < width*2+1; j++)
+                {
+                    Write(maze[i,j] ? path : wall);
+                }
+                WriteLine();
+            }
+            return;
         }
 
         static int[] GetNextCells()
@@ -97,8 +132,7 @@ namespace Maze
             if (x < 0 || x > width || y < 0 || y > height || cells[x, y].visited)
                 return;
             cells[x, y].visited = true;
-            PrintGrid();
-            WriteLine(x + " " + y);
+            //PrintGrid();
             int[] order = GetNextCells();
             foreach (var next in order)
             {
@@ -144,6 +178,7 @@ namespace Maze
             InitiateGrid();
             GeneratePath();
             PrintGrid();
+            ConvertCellsToMaze();
         }
     }
 }
