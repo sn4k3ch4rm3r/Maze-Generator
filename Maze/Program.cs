@@ -21,17 +21,18 @@ namespace Maze
         //█
         static readonly string wall = "█";
         static readonly string path = " ";
-        static readonly string solution = "x";
+        static readonly string solution = "█";
 
-        static int width = 5;//78;
-        static int height = 5;//19;
+        static int width = 90;
+        static int height = 20;
 
         static int[] start = { 0, 0 };
         static int[] finish = { width-1, height-1 };
 
         static Cell[,] cells = new Cell[width,height];
 
-        static bool[,] maze = new bool[width*2+1, height*2+1];
+        static bool[,] maze = new bool[width * 2 + 1, height * 2 + 1];
+        static int[,] distance = new int[width * 2 + 1, height * 2 + 1];
 
         static void InitiateGrid()
         {
@@ -42,74 +43,33 @@ namespace Maze
                     cells[x, y] = new Cell();
                 }
             }
-            CursorVisible = false;
-            //PrintGrid();
         }
 
         static void PrintGrid()
         {
-            int w = wall.Length;
-            int cursor_x = w;
-            int cursor_y = 1;
-            for (int y = 0; y < height; y++)
+            ConvertCellsToMaze();
+            SetCursorPosition(0, 0);
+            for (int i = 0; i < height * 2 + 1; i++)
             {
-                SetCursorPosition(cursor_x, cursor_y);
-                for (int x = 0; x < width; x++)
+                for (int j = 0; j < width * 2 + 1; j++)
                 {
-                    SetCursorPosition(cursor_x - w, cursor_y - 1);
-                    Write(wall);
-                    SetCursorPosition(cursor_x, cursor_y - 1);
-                    if (cells[x, y].walls[0])
-                        Write(wall);
-                    else
-                        Write(path);
-                    SetCursorPosition(cursor_x - w, cursor_y);
-                    if (cells[x, y].walls[3])
-                        Write(wall);
-                    else
-                        Write(path);
-                    Write(path);
-                    cursor_x += 2*w;
+                    Write(maze[j, i] ? path : wall);
                 }
-                SetCursorPosition(cursor_x - w, cursor_y-1);
-                Write(wall);
-                SetCursorPosition(cursor_x-w, cursor_y);
-                Write(wall);
-                cursor_y+=2;
-                cursor_x = w;
+                WriteLine();
             }
-            SetCursorPosition(start[0] * wall.Length*2+wall.Length, start[1]*2+1);
-            Write("S");
-            SetCursorPosition(finish[0] * wall.Length*2+wall.Length, finish[1]*2+1);
-            Write("F");
-            SetCursorPosition(0, cursor_y-1);
-            for (int i = 0; i < width*2+1; i++)
-            {
-                Write(wall);
-            }
-            WriteLine();
         }
 
         static void ConvertCellsToMaze()
         {
-            for (int x = 0; x < width*2; x++)
+            for (int x = 1; x < width*2; x+=2)
             {
                 for (int y = 1; y < height*2; y+=2)
                 {
-                    maze[y-1, x] = cells[(y-1)/2, x / 2].walls[0];
-                    maze[y,x] = cells[y / 2 , x / 2].walls[1];
+                    maze[x+1, y] = !cells[x / 2, y / 2].walls[1];
+                    maze[x, y-1] = !cells[x / 2, y / 2].walls[0];
+                    maze[x, y] = true;
                 }
             }
-            WriteLine();
-            for (int i = 0; i < height*2+1; i++)
-            {
-                for (int j = 0; j < width*2+1; j++)
-                {
-                    Write(maze[i,j] ? path : wall);
-                }
-                WriteLine();
-            }
-            return;
         }
 
         static int[] GetNextCells()
@@ -173,12 +133,81 @@ namespace Maze
             }
         }
 
+        static void Flood(bool[,] m, int x, int y, int dist)
+        {
+            if (x < 0 || x > width*2-1 || y < 0 || y > height*2-1 || !m[x,y])
+            {
+                if (!maze[x, y])
+                {
+                    distance[x, y] = -1;
+                }
+                return;
+            }
+            m[x, y] = false;
+            distance[x, y] = dist;
+            Flood(m, x + 1, y, dist + 1);
+            Flood(m, x - 1, y, dist + 1);
+            Flood(m, x, y + 1, dist + 1);
+            Flood(m, x, y - 1, dist + 1);
+        }
+
+        static void SolveFlood(int x, int y)
+        {
+            SetCursorPosition(x * wall.Length, y);
+            Write(solution);
+            if (distance[x, y] == 0)
+                return;
+
+            if (distance[x-1, y] < distance[x, y] && distance[x-1, y] != -1)
+                SolveFlood(x - 1, y);
+            else if (distance[x + 1, y] < distance[x, y] && distance[x+1, y] != -1)
+                SolveFlood(x + 1, y);
+            else if (distance[x, y-1] < distance[x, y] && distance[x, y-1] != -1)
+                SolveFlood(x, y-1);
+            else if (distance[x, y+1] < distance[x, y] && distance[x, y+1] != -1)
+                SolveFlood(x, y+1);
+        }
+
         static void Main(string[] args)
         {
+            WindowWidth = width * 2 * wall.Length+2;
+            WindowHeight = height * 2 +2;
+            CursorVisible = false;
             InitiateGrid();
             GeneratePath();
             PrintGrid();
             ConvertCellsToMaze();
+            bool[,] cp = new bool[width*2+1, height*2+1];
+            for (int i = 0; i < width*2+1; i++)
+            {
+                for (int j = 0; j < height*2+1; j++)
+                {
+                    cp[i, j] = maze[i,j];
+                }
+            }
+            Flood(cp, finish[0]* 2+1, finish[1] * 2+1, 0);
+            ForegroundColor = ConsoleColor.DarkRed;
+            SolveFlood(start[0]+1, start[1]+1);
+            ResetColor();
+            BackgroundColor = ConsoleColor.DarkRed;
+            ForegroundColor = ConsoleColor.White;
+            SetCursorPosition(start[0] * wall.Length * 2 + wall.Length, start[1] * 2 + 1);
+            Write("S");
+            SetCursorPosition(finish[0] * wall.Length * 2 + wall.Length, finish[1] * 2 + 1);
+            Write("F");
+            SetCursorPosition(0, height * 2 + 1);
+            ResetColor();
+            WriteLine(distance[start[0]+1, start[1]+1] + " steps");
+            /*
+            for (int i = 0; i < width*2+1; i++)
+            {
+                Write("[ ");
+                for (int j = 0; j < height*2+1; j++)
+                {
+                    Write(Convert.ToString(distance[j, i]).Length < 2? " " + distance[j, i] + " " : distance[j, i] + " ");
+                }
+                Write("]\n");
+            }*/
         }
     }
 }

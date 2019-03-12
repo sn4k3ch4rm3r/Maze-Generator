@@ -12,3 +12,17 @@ D:\Users\Boldizsar\C#\Maze-Generator\Maze\obj\Debug\Maze.csprojAssemblyReference
 D:\Users\Boldizsar\C#\Maze-Generator\Maze\obj\Debug\Maze.csproj.CoreCompileInputs.cache
 D:\Users\Boldizsar\C#\Maze-Generator\Maze\obj\Debug\Maze.exe
 D:\Users\Boldizsar\C#\Maze-Generator\Maze\obj\Debug\Maze.pdb
+G:\C#\Maze-Generator\Maze\bin\Debug\Maze.exe.config
+G:\C#\Maze-Generator\Maze\bin\Debug\Maze.exe
+G:\C#\Maze-Generator\Maze\bin\Debug\Maze.pdb
+G:\C#\Maze-Generator\Maze\obj\Debug\Maze.csprojAssemblyReference.cache
+G:\C#\Maze-Generator\Maze\obj\Debug\Maze.csproj.CoreCompileInputs.cache
+G:\C#\Maze-Generator\Maze\obj\Debug\Maze.exe
+G:\C#\Maze-Generator\Maze\obj\Debug\Maze.pdb
+F:\C#\Maze-Generator\Maze\bin\Debug\Maze.exe.config
+F:\C#\Maze-Generator\Maze\bin\Debug\Maze.exe
+F:\C#\Maze-Generator\Maze\bin\Debug\Maze.pdb
+F:\C#\Maze-Generator\Maze\obj\Debug\Maze.csprojAssemblyReference.cache
+F:\C#\Maze-Generator\Maze\obj\Debug\Maze.csproj.CoreCompileInputs.cache
+F:\C#\Maze-Generator\Maze\obj\Debug\Maze.exe
+F:\C#\Maze-Generator\Maze\obj\Debug\Maze.pdb
